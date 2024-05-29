@@ -15,7 +15,7 @@ permalink: /publications/
 </div>
 </details>
 <span style="color:grey"><ins>D. Kufel</ins>, J. Kemp, S. Linsel, C. Laumann, N. Yao (2024)</span>\
-[PDF](https://arxiv.org/pdf/2003.02178.pdf)
+[PDF](https://arxiv.org/abs/2405.17541)
 
 <details>
 <summary>Skier and loop the loop with friction </summary>
