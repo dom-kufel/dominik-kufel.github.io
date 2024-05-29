@@ -8,6 +8,14 @@ sitemap: false
 permalink: /publications/
 ---
 
+<details>
+<summary>Approximately-symmetric neural networks for quantum spin liquids </summary>
+<div markdown="1">
+<span style="font-size:0.85em;">**Field:** Quantum Many-Body Physics <br> **Main points:** Constructed tailor-made, scalable and interpretable neural network architectures for studying quantum spin liquid problems.  </span>
+</div>
+</details>
+<span style="color:grey"><ins>D. Kufel</ins>, J. Kemp, S. Linsel, C. Laumann, N. Yao (2024)</span>\
+[PDF](https://arxiv.org/pdf/2003.02178.pdf)
 
 <details>
 <summary>Skier and loop the loop with friction </summary>
