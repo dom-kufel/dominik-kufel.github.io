@@ -205,7 +205,11 @@ Fig. 3: Expressivity of different many-body ansatze if one restricts to polynomi
 
 In particular, in contrast to tensor networks, there exists **volume law states**  <a href="#references">*[Deng+ (2017)]*</a> which may be represented by simple neural network architectures (such as restricted Boltzmann machines) with only a polynomial number of parameters. This makes neural networks to be, in principle, hopeful for representing ground states of some long-range interacting Hamiltonians or quantum states arising from long quench dynamics! What is the rough intuition behind efficient representability of the volume law? 
 
-Short answer: *non-locality* of connections within hidden units of the neural network (which contrasts with *local* connectivity of tensor networks). For instance <a href="#references">*[Deng+ (2017)]*</a> proves that for a simple example of a restricted Boltzmann machine architecture [^11], restricting connections between input layer and a hidden layer to $$\mathcal{O}(1)$$ neighbors upper bounds representable entanglement entropy to an area law. On the other hand, they prove that there exist examples of RBM states (with polynomial number of parameters) with long-range ($$\mathcal{O}(N)$$) connections which exhibit volume law. Thus, it is long-range connectivity which allows for efficient description of some volume law states[^12]. 
+Short answer: *non-locality* of connections within hidden units of the neural network (which contrasts with *local* connectivity of tensor networks). For instance <a href="#references">*[Deng+ (2017)]*</a> proves that for a simple example of a restricted Boltzmann machine architecture [^11], restricting connections between input layer and a hidden layer to $$\mathcal{O}(1)$$ neighbors upper bounds representable entanglement entropy to an area law. On the other hand, they prove that there exist examples of RBM states (with polynomial number of parameters) with long-range ($$\mathcal{O}(N)$$) connections which exhibit volume law - see Fig. 4 below. Thus, it is long-range connectivity which allows for efficient description of some volume law states[^12]. 
+
+<p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net_volume_law.png" width="800" loading="lazy"/></p>
+Fig. 4: Volume-law in restricted Boltzmann machines requires long-range connectivity.  
+{:.figcaption}
 
 This is cool: neural quantum states are strictly more expressive than tensor networks, and their representability is limited by something different than entanglement thus making it applicable to cases where generic tensor networks are not! But then a natural question becomes: what physical quantity limit neural network expressivity on quantum states? I.e. what is an equivalent of "entanglement" for tensor networks or "magic" for efficient quantum circuit simulation? Well, as of mid 2024, no one seem to know exactly and this is an exciting open research direction! 
 
@@ -237,10 +241,10 @@ Okay, we have seen plenty of qualified hopes for neural quantum states. What are
 
 ### Local minima issue and ground states
 
-Well, for ground states of more complicated Hamiltonians, optimization often gets stuck in local minima (see Fig. 4). 
+Well, for ground states of more complicated Hamiltonians, optimization often gets stuck in local minima (see Fig. 5). 
 
 <p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net_local_minima.png" width="800" loading="lazy"/></p>
-Fig. 4: Neural network optimization often gets stuck in local minima. 
+Fig. 5: Neural network optimization often gets stuck in local minima. 
 {:.figcaption}
 
 Unfortuantely, this is often true even as one ramps up the number of parameters in a neural network. This is not good! It means that in such cases we have no knob to tune for systematical improvement of accuracy... Recent work <a href="#references">*[Dash+ (2024)]*</a> links such "practical breakdown" of scalability to properties of a quantum geometric tensor i.e. matrix $$\mathbf{S}$$ we mentioned in the <a href="#energy-optimization">optimization section</a>: saturation of accuracy scalability corresponds to a saturation in the rank of the quantum geometric tensor. 
@@ -254,8 +258,13 @@ Practically, however, optimization getting trapped in local minima remains an im
 
 ### Challenges for time dynamics
 
-Okay, enough of problems for ground states! Let's briefly touch upon time dynamics. First a little background. It turns out, that finding time-evolution of quantum states might be found in a very similar neural quantum states paradigm which we described <a href="#neural-networks-for-quantum---basics">before</a>. We still represent wavefunction with a neural net, still evaluate observables of interest through sampling, and still optimize with quantum natural gradient, although with a slightly modified loss function. As it turns out, it yields the same updates for a quantum natural gradient as described before up to picking up an extra imaginary unit $$i$$ in front of the gradient. Next, the above approach of simulating time-dynamics with neural quantum states already has some successes e.g,. in achieving state-of-the-art (in some regimes) for simulating parameter sweep through a $$20 \times 20$$ square lattice transverse field Ising model <a href="#references">*[Schmitt+ (2022)]*</a>. Unfortunately, more broadly, time evolution with neural quantum states seems to be a more challenging problem than finding ground states. There are few reasons for this
+Okay, enough of problems for ground states! Let's briefly touch upon time dynamics. First a little background. It turns out, that finding time-evolution of quantum states might be found in a very similar neural quantum states paradigm which we described <a href="#neural-networks-for-quantum---basics">before</a>. We still represent wavefunction with a neural net, still evaluate observables of interest through sampling, and still optimize with quantum natural gradient, although with a slightly modified loss function. As it turns out, it yields the same updates for a quantum natural gradient as described before up to picking up an extra imaginary unit $$i$$ in front of the gradient. Next, the above approach of simulating time-dynamics with neural quantum states already has some successes e.g,. in achieving state-of-the-art (in some regimes) for simulating parameter sweep through a $$20 \times 20$$ square lattice transverse field Ising model <a href="#references">*[Schmitt+ (2022)]*</a>. Unfortunately, more broadly, time evolution with neural quantum states seems to be a more challenging problem than finding ground states. This manifests itself in e.g., inaccurate long-time observable evolution trajectories (see Fig. 6). 
 
+<p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net_dynamics.png" width="300" loading="lazy"/></p>
+Fig. 6: Neural networks often struggle to capture long-term dynamics of an observable $$Q$$. 
+{:.figcaption}
+
+Why does it happen? To an extent this is to be expected: time dynamics is more challenging for tensor networks as well! Specific reasons for this in neural networks include: 
 1. Neccesity of complex phases in simulating dynamics (thus implying similar issues mentioned in the <a href="#no-sign-problem">sign-problem section</a>.).
 2. Regularization required for ill-conditioning of quantum geometric tensor $$\mathbf{S}$$ (mentioned in the <a href="#energy-optimization">optimization section</a>) diverts the ansatz away from the real physical trajectory[^19]. 
 3. Stochastic estimation of $$\mathbf{S}$$ matrix needs to be more accurate, and Monte Carlo estimations are prone to biased sampling issue <a href="#references">*[Sinibaldi+ (2023)]*</a>. This relates back to assuming $$\psi_s \neq 0 \ \forall s$$ we have made in derivation of Monte Carlo estimates <a href="#sampling-quantum-ground-state-energy">before</a>: it turns out whenever $$\psi_s \approx 0$$ while $$\partial_{\theta} \psi_s \neq 0$$, Monte Carlo estimates of $$\mathbf{S}$$ will be biased, rendering accurate real time dynamics tracking to be more difficult.
