@@ -39,15 +39,46 @@ sitemap: false
 
 <p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net_summary.png" width="1000"/></p>
 
-<br>
-There is no doubt - AI has seen some tremendous advances in the last decade or so. 
+
+***
+<!-- *There is no doubt - AI has seen some tremendous advances in the last decade or so.* -->
 
 
 <!-- <p>
-  <span style="font-size: 1.2em; line-height: 0.6;">There is no doubt</span>  - AI has seen some tremendous advances in the last decade or so.
+  <span style="font-size: 1.1em; line-height: 0.6; font-style: italic;">There is no doubt - AI has seen some tremendous advances in the last decade or so. </span>  
 </p> -->
 
-Just to mention a few: large language models surpassed human performance[^1] on a multitude of tasks, [AlphaZero](https://www.nature.com/articles/s41586-020-03051-4a) humbles world’s top chess players, while [AlphaFold2&3](https://www.nature.com/articles/s41586-024-07487-w) make a huge impact on protein folding research. Personally, I find this progress in a variety of fields really quite amazing! This also naturally prompts me to ask a question about my own field: **can recent AI advancements be helpful for understanding quantum many-body physics**?
+<!-- <style>
+  .centered-bold-gray {
+    text-align: center;         /* Center the text */
+    color: black;               /* Set the text color to black */
+    font-weight: bold;          /* Make the text bold */
+    background-color: #f0f0f0;  /* Set the background color to light gray */
+    padding: 10px;              /* Add padding to create space around the text */
+    border-radius: 5px;         /* Optional: round the corners of the background */
+    display: inline-block;      /* Ensure the background only covers the text area */
+  }
+</style> -->
+
+<p>
+  <span style="font-size: 1.2em; line-height: 0.6; font-style: italic;">There is no doubt - AI has seen some tremendous advances in the past decade. </span>  
+</p>
+Just to mention a few examples: 
+* Large language models surpassed human performance[^1] on a multitude of tasks, 
+* [AlphaZero](https://www.nature.com/articles/s41586-020-03051-4a) humbles world’s top chess players,
+* [AlphaFold2&3](https://www.nature.com/articles/s41586-024-07487-w) make a huge impact on protein folding research. 
+
+This impressive progress across diverse disciplines naturally leads me to wonder about my own field: 
+<!-- **can recent AI advancements aid in understanding quantum many-body physics**? -->
+
+<p style="text-align: center; color: black; font-weight: bold;">
+  Can recent AI advancements aid in understanding quantum many-body physics?
+</p>
+
+
+<!-- <p class="centered-bold-gray">Can recent AI advancements aid in understanding quantum many-body physics?</p> -->
+
+<!-- Just to mention a few: large language models surpassed human performance[^1] on a multitude of tasks, [AlphaZero](https://www.nature.com/articles/s41586-020-03051-4a) humbles world’s top chess players, while [AlphaFold2&3](https://www.nature.com/articles/s41586-024-07487-w) make a huge impact on protein folding research. Personally, I find this progress in a variety of fields really quite amazing! This also naturally prompts me to ask a question about my own field: **can recent AI advancements be helpful for understanding quantum many-body physics**? -->
 
 In my view the answer is **a qualified yes!** Why? Well, maybe because neural networks are *already* state-of-the-art for some quantum many-body physics models among all existing numerical methods! Neural-networks for many-body problems were shown to be highly-expressible, runtime and memory-efficient and have a different set of limitations than existing numerical methods. Cool! This makes me think that there might exist an interesting space of problems where neural nets can outcompete more traditional approaches. This in turn, will make AI-based methods to be increasingly more popular within the condensed matter / quantum information community. Motivated by this why not learning more about neural networks for quantum?
 
