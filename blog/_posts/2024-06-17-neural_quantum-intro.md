@@ -80,11 +80,11 @@ This impressive progress across diverse disciplines naturally leads me to wonder
 
 <!-- Just to mention a few: large language models surpassed human performance[^1] on a multitude of tasks, [AlphaZero](https://www.nature.com/articles/s41586-020-03051-4a) humbles world’s top chess players, while [AlphaFold2&3](https://www.nature.com/articles/s41586-024-07487-w) make a huge impact on protein folding research. Personally, I find this progress in a variety of fields really quite amazing! This also naturally prompts me to ask a question about my own field: **can recent AI advancements be helpful for understanding quantum many-body physics**? -->
 
-In my view the answer is **a qualified yes!** Why? Well, maybe because neural networks are *already* state-of-the-art for some quantum many-body physics models among all existing numerical methods! Neural-networks for many-body problems were shown to be highly-expressible, runtime and memory-efficient and have a different set of limitations than existing numerical methods. Cool! This makes me think that there might exist an interesting space of problems where neural nets can outcompete more traditional approaches. This in turn, will make AI-based methods to be increasingly more popular within the condensed matter / quantum information community. Motivated by this why not learning more about neural networks for quantum?
+In my view the answer is **a qualified yes!** Why? Well, maybe because neural networks are *already* state-of-the-art for some quantum many-body physics models among all existing numerical methods! Neural-networks for many-body problems are highly-expressible, runtime and memory-efficient and have a different set of limitations than existing numerical methods. Cool! This makes me think that there might exist an interesting space of problems where neural nets can outcompete more traditional approaches, thus eventually boosting their popularity in the condensed matter and quantum information communities. Motivated by this why not learning more about neural networks for quantum?
 
 In this blogpost I will discuss how to apply **neural-network based methods for solving quantum many-body problems**. We will start from briefly describing the <a href="#neural-networks-for-quantum---basics">basic framework</a>. This should give enough background to understand the current literature on the topic. Equipped with this knowledge, we will talk about the <a href="#neural-networks-for-quantum---hopes">hopes</a> and rather unique strengths of neural networks for some quantum problems as compared with other existing methods. These will include lack of an inherent sign problem (as compared with quantum Monte Carlo) and not being limited to area law entanglement states (as compared with tensor networks). Finall, we will discuss some associated <a href="#neural-quantum-states-challenges">challenges</a> and glimpse an <a href="#outlook"> outlook </a> and perspectives of this emerging field. 
 
-Within the blogpost I will assume you have some quantum background. I recognize though that this is an interdisciplinary field, so to make things a bit clearer for machine-learning-inclined people, please read through the extra expandable "ML boxes" to get a bit more of the quantum context. Alright, without further delay, let's get started!
+Within the blogpost I will assume you have some quantum background. I recognize though that this is an interdisciplinary field, so to make things a bit clearer for machine-learning-inclined people, please read through the extra expandable "ML boxes" to get a bit more of the quantum context. Alright, let's get started!
 * table of contents
 {:toc}
 
@@ -121,7 +121,7 @@ Neural network parameterizes the wavefunction of a quantum system in a particula
 After familiarizing ourselves with where to stick in a neural network, you may wonder: what is an example quantum task at hand? These might of course take many different forms. For instance one might be interested in the ground state properties of quantum systems, finite temperature states, or time dynamics of a quantum system. The above framework, often coined as neural quantum states (NQS) is applicable to all of these contexts. To illustrate the remaining key ideas we will first consider the problem of finding ground states which is conceptually the simplest. Largely similar lines of reasoning apply also to other problems - we will briefly review them later on.  -->
 
 ### Sampling quantum ground state energy
-Okay, so far we have parameterized wavefunctions with a neural network. But how to solve different classes of many-body problems with it? Perhaps conceptually simplest class of problems in this context is finding lowest-energy (ground) states of a Hamiltonian and this is what we will discuss next. Solving other classes of problems (such as time dynamics or finding steady states of open systems) requires largely similar lines of reasoning - we will briefly review them later on. 
+Okay, so far we have parameterized wavefunctions with a neural network. But how do we solve different classes of many-body problems with this approach? Perhaps conceptually simplest class of problems in this context is finding lowest-energy (ground) states of a Hamiltonian which we will dive into next. Solving other classes of problems, like time dynamics or steady states in open systems, follows a similar logic, and we will touch on those later.
 
 <details>
 <summary><b>ML BOX 2:</b> Why searching for ground states? Why is it hard? </summary>
@@ -170,14 +170,18 @@ That is great, but how about $$\langle H \rangle$$ evaluation? Well, utilizing t
 \end{equation}
 where set of samples $$\{s_i\}$$ are typically generated by a Metropolis-Hastings algorithm[^4] and $$\{s_i\}$$ make a Monte Carlo Markov Chain (MCMC).
 
-At first it might sound like a bit of a crazy idea! In MCMC we create a chain of bit string configurations used for sampling $$s_0 \rightarrow s_1 \rightarrow \cdots \rightarrow s_{N_{samples}}$$. If an update rule is ergodic[^5] then MCMC chain will (at least!) eventually converge to sampling from an underlying true probability distribution. Generically, it is unclear, however, how long the MCMC chains need to be in order to do so (and we know some adversarial distributions for which length of a chain, also known as *mixing time*, need to be exponentially long). So why it does not kill the method above? First, for ground states of *stoquastic* Hamiltonians it is possible to prove that the length of the MCMC chain needs to be only polynomial in system size <a href="#references">*[Bravyi+ (2023)]*</a>[^6]. Second, one can just 'hope for the best' and check some characteristics of MCMC methods (such as [autocorrelation time](http://www.hep.fsu.edu/~berg/teach/mcmc08/material/lecture07mcmc3.pdf)and [Rsplit](https://projecteuclid.org/journals/bayesian-analysis/volume-16/issue-2/Rank-Normalization-Folding-and-Localization--An-Improved-R%cb%86-for/10.1214/20-BA1221.full)) which can often tell you if something goes wrong with the sampling. Third, for some specific neural network architectures (i.e autoregressive neural networks) MCMC methods are not needed but instead one can use more reliable direct sampling <a href="#references">*[Sharir+ (2019)]*</a>.
+At first it might sound a bit wild! In MCMC we create a chain of bit string configurations used for sampling $$s_0 \rightarrow s_1 \rightarrow \cdots \rightarrow s_{N_{samples}}$$. If the update rule is ergodic[^5] then MCMC chain will eventually converge to sampling from an underlying true probability distribution. However, the required chain length (or mixing time) can be uncertain and sometimes exponentially long for some adversarial examples of distributions. So why doesn't it kill the method above? 
+
+1. For ground states of *stoquastic* Hamiltonians, the MCMC chain is *provably* polynomial in system size <a href="#references">*[Bravyi+ (2023)]*</a>[^6]. 
+2. One can just 'hope for the best' and monitor some quality characteristics of MCMC methods (such as [autocorrelation time](http://www.hep.fsu.edu/~berg/teach/mcmc08/material/lecture07mcmc3.pdf)and [Rsplit](https://projecteuclid.org/journals/bayesian-analysis/volume-16/issue-2/Rank-Normalization-Folding-and-Localization--An-Improved-R%cb%86-for/10.1214/20-BA1221.full)) which can often detect sampling issues. 
+3. For specific neural network architectures, such as autoregressive networks, MCMC methods are not needed - one can use more reliable direct sampling <a href="#references">*[Sharir+ (2019)]*</a>.
 
 <blockquote class="note">
   <b>Key idea 2:</b> Estimate expectation value of energy (loss function) through Monte Carlo Markov chain sampling. 
 </blockquote>
 
 ### Energy optimization
-Great, so we know how to evaluate energy efficiently but how to minimize it? Well, I guess the answer is quite obvious: steepest descent! 
+Great! So we know how to evaluate energy efficiently, but how to minimize it? The answer is simple: steepest descent! 
 
 In the simplest form it will correspond to a gradient descent algorithm for neural network parameters $$\theta$$
 \begin{equation}
@@ -185,16 +189,18 @@ In the simplest form it will correspond to a gradient descent algorithm for neur
 \end{equation} 
 where $$\eta$$ denotes learning rate. Note that the above gradient descent might be thought as stochastic gradient descent (SGD) since we evaluate gradients $$\nabla_{\theta} \langle H \rangle$$ by sampling (as discussed before). 
 
-So why do I say steepest descent instead of just SGD? Well, in practice, for majority of architectures and models SGD performs rather poorly and it is common to use more complicated optimization methods e.g., quantum natural gradient <a href="#references">*[Stokes+ (2020)]*</a> (in the quantum Monte Carlo community also known as stochastic reconfiguration <a href="#references">*[Sorella (1998)]*</a>). The main idea of these methods is to take into account "curvature" information of the underlying parameter space manifold and therefore perform an update in a "steeper" direction than that proposed by a gradient itself. Typically such extra information is hidden in a (stochastic approximation of) matrix $$\mathbf{S}_{\alpha, \beta} = \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right) \right] - \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \right] \mathbb{E} \left[ \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right]$$ with dimensions $$N_{parameters} \times N_{parameters}$$ (often known as quantum geometric tensor) which is said to precondition the usual gradient i.e. a quantum natural graident update is defined by
+So why do I say steepest descent instead of just SGD? Well, in practice, standard SGD often falls short for majority of architectures and models. More advanced optimization methods such as quantum natural gradient <a href="#references">*[Stokes+ (2020)]*</a> (in the quantum Monte Carlo community also known as stochastic reconfiguration <a href="#references">*[Sorella (1998)]*</a>) are usually required. The main idea of these methods is to take into account "curvature" information of the underlying parameter space manifold and therefore perform an update in a "steeper" direction than that proposed by a gradient itself. Typically such extra information is hidden in a (stochastic approximation of) matrix $$\mathbf{S}_{\alpha, \beta} = \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right) \right] - \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \right] \mathbb{E} \left[ \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right]$$ with dimensions $$N_{parameters} \times N_{parameters}$$ (often known as quantum geometric tensor) which is said to precondition the usual gradient i.e. a quantum natural graident update is defined by
 \begin{equation}
 \theta_{t+1} = \theta_{t} - \eta \mathbf{S}^{-1} \nabla_{\theta} \langle H \rangle 
 \end{equation}
 where $$\mathbf{S}^{-1}$$ denotes (pseudo)inverse of an $$\mathbf{S}$$ matrix. 
-Although I will postpone discussing $$\mathbf{S}$$ matrix (which is quite an interesting object!) in more detail for another blogpost, I will mention three important things about it from the practical perspective:
+Although I will postpone discussing $$\mathbf{S}$$ matrix (which is quite an interesting object!) in more detail for another blogpost, here are thre key practical points:
 
-1. Quantum natural gradient is equivalent ot performing quantum imaginary time evolution on a variational manifold <a href="#references">*[Stokes+ (2020), Appendix B]*</a> 
-2. Quantum natural gradient update is more costly[^7] than standard SGD due to need for pseudoinverse (increasing computation complexity to $$\mathcal{O}(N_{parameters}^3 + N_{parameters}^2 N_{samples})$$ or after information re-packaging $$\mathcal{O}(N_{samples}^3 + N_{parameters} N_{samples}^2)$$, see <a href="#references">*[Chen&Heyl (2023)]*</a>) and 
-3. Matrix $$\mathbf{S}$$ is ill-conditioned which requires its regularization before it can be (pseudo-)inverted (typically in form of a diagonal shift $$\mathbf{S} \rightarrow \mathbf{S} + \epsilon \mathbb{I}$$ which decreases condition number). We will briefly go back to the quantum geometric tensor in more detail when we get to <a href="#neural-quantum-states-challenges">challenges</a> section!
+1. Quantum natural gradient is essentially performing quantum imaginary time evolution on a variational manifold <a href="#references">*[Stokes+ (2020), Appendix B]*</a>,
+2. Quantum natural gradient updates are more costly[^7] than standard SGD. They require calculating matrix (pseudo)inverse, increasing computation complexity to $$\mathcal{O}(N_{parameters}^3 + N_{parameters}^2 N_{samples})$$ or after information re-packaging $$\mathcal{O}(N_{samples}^3 + N_{parameters} N_{samples}^2)$$, see <a href="#references">*[Chen&Heyl (2023)]*</a>,
+3. Matrix $$\mathbf{S}$$ is ill-conditioned and therefore needs regularization before it can be inverted. This is usually done by adding a small diagonal shift,  $$\mathbf{S} \rightarrow \mathbf{S} + \epsilon \mathbb{I}$$, to improve the condition number. 
+
+We will revisit the quantum geometric tensor in more detail when we get to <a href="#neural-quantum-states-challenges">challenges</a> section!
 
 <blockquote class="note">
   <b>Key idea 3:</b> Optimize the expectation value of energy through (stochastic) steepest descent. 
@@ -204,15 +210,15 @@ Although I will postpone discussing $$\mathbf{S}$$ matrix (which is quite an int
 
 Great! So far we have studied three key ideas for applying neural networks to quantum many-body problems. To recap: 
 
-1. Represent coefficients of a quantum state as a neural network,
+1. Represent the coefficients of a quantum state using a neural network,
 2. Sample the expectation value of energy to get the loss function[^8],
-3. Optimize it through steepest descent methods.
+3. Optimize this loss function through steepest descent methods.
 
-Very simple! But why is it helpful? Long story short: expressivity, efficiency inherited from ML community and no sign problem (in principle) are keywords. Let's explore these in more details!
+Very simple! But why is this approach helpful? Long story short: expressivity, efficiency inherited from ML community and no sign problem (in principle) are keywords. Let's explore these in more detail!
 
 ### Expressivity of neural networks for quantum
 
-Let's start from expressivity. Our goal is to approximate a quantum state in a Hilbert space $$\psi  \in \mathcal{H}$$ with a parametrized ansatz $$\psi(\theta) $$. One cool thing about neural network ansatze[^9] is that we are guaranteed that if the network is wide-enough we can capture any state in a Hilbert space. More specifically, even a single hidden layer neural network can approximate any quantum state with an arbitrary precision, as the number of neurons in the hidden layer goes to infinity (see figure below).
+Let's start from expressivity. We aim to approximate a quantum state in a Hilbert space $$\psi  \in \mathcal{H}$$ with a parametrized ansatz $$\psi(\theta) $$. One cool thing about neural network ansatze[^9] is their ability to capture any state in a Hilbert space, given that the network is wide enough. More specifically, even a single hidden layer neural network can approximate any quantum state with an arbitrary precision, as the number of neurons in the hidden layer goes to infinity (see Fig. 2 below).
 
 <p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net_UAT.png" width="600" loading="lazy"/></p>
 Fig. 2: A simple sketch of a universal approximation theorem. 
