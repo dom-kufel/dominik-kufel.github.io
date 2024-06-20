@@ -93,9 +93,9 @@ Within the blogpost, I will assume you have some quantum background. I recognize
 ## Neural networks for quantum - basics
 
 We will study the problem of finding the lowest energy states or time dynamics of a quantum many-body system. The basics of applying neural networks to it are really simple. We will consider three key ideas <a href="#references">*[Carleo&Troyer (2017)]*</a>:
-1. We will expand a quantum state in a certain basis where coefficients will be parametrized by a neural network. 
-2. We will treat an expectation value of a Hamiltonian as a loss function and evaluate it through sampling. 
-3. We will optimize the loss function by the steepest descent on neural network parameters. 
+1. Expand a quantum state in a certain basis where coefficients will be parametrized by a neural network. 
+2. Treat an expectation value of a Hamiltonian as a loss function and evaluate it through sampling. 
+3. Optimize the loss function by the steepest descent on neural network parameters. 
 
 Note, all this is purely optimization: there is no data and we utilize neural networks only as (powerful!) function approximators[^2]. For simplicity, we will focus on spin Hamiltonian models, but the formalism below extends to fermions and bosons as well. 
 
