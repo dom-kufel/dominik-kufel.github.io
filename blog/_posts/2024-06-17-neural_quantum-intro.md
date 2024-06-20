@@ -19,7 +19,7 @@ sitemap: false
 [^1]: See e.g., [this](https://www.nature.com/articles/s41598-023-45837-2) for evaluating the GPT-4 and GPT-3.5 for ophthalmology self-assessment program. 
 [^2]: This is one of the key differences between neural networks for quantum setup and typical supervised learning: we do not need to worry about generalization, only about minimizing the loss function as much as possible. 
 [^3]: You might ask why is it valid to make this assumption? Well, in general, it is not and for some problems, this assumption is violated and introduces a bias to the sampling method! It will be further discussed <a href="#challenges-for-time-dynamics">here</a>.
-[^4]: In case you are unfamiliar with [Metropolis-Hastings algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm): the key idea is to (i) start from a random bit string $$s_0$$ (ii) generate another bit string $$s_1$$ by applying an update rule to $$s_0$$ (e.g., flip a bit at a random location), (iii) calculate acceptance probability for $$s_1$$ (for symmetric update rules as in the example above: $$\min(1,\frac{|\psi_{s_1}|^{2}}{|\psi_{s_0}|^{2}})$$) and (iv) draw a number uniformly from range $$[0,1]$$, if it is below or equal to the acceptance probability calculated in (iii) then accept, if not then reject the $$s_1$$ configuration and draw a new bit string (v) repeat to construct a Monte Carlo Markov chain. 
+[^4]: In case you are unfamiliar with [Metropolis-Hastings algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm): the key idea is to (i) start from a random bit string $$s_0$$ (ii) generate another bit string $$s_1$$ by applying an update rule to $$s_0$$ (e.g., flip a bit at a random location), (iii) calculate acceptance probability for $$s_1$$ (for symmetric update rules as in the example above: $$\min(1,\frac{\vert \psi_{s_1} \vert^{2}}{\vert \psi_{s_0} \vert^{2}})$$) and (iv) draw a number uniformly from range $$[0,1]$$, if it is below or equal to the acceptance probability calculated in (iii) then accept, if not then reject the $$s_1$$ configuration and draw a new bit string (v) repeat to construct a Monte Carlo Markov chain. 
 [^5]: Ergodic in our case means that such an update rule allows us to explore all bit string space.
 [^6]: To completely rule out sampling inefficiency for stoquastic Hamiltonians, one might need to potentially show that sampling is efficient throughout the entire optimization path. This means that starting with initial parameters $$\theta_{0}$$ and converging to the ground state parameters $$\theta_*$$ sampling might need to be provably efficient not just at $$\theta_0$$ but also for all intermediate states between $$\theta_0$$ and $$\theta_*$$. However, it is not immediately clear to me if efficient sampling at every point along the path is truly necessary! 
 [^7]: Such increased computational cost is prohibitive for models with a huge number of parameters and thus the classical counterpart of a quantum natural gradient is rather rarely used in practice in classical machine learning!
@@ -90,10 +90,11 @@ Within the blogpost, I will assume you have some quantum background. I recognize
 
 ## Neural networks for quantum - basics
 
-We will study the problem of finding the lowest energy states or time dynamics of a quantum many-body system. The basics of applying neural networks to it are really simple. We will consider three key ideas <a href="#references">*[Carleo&Troyer (2017)]*</a>. 
+We will study the problem of finding the lowest energy states or time dynamics of a quantum many-body system. The basics of applying neural networks to it are really simple. We will consider three key ideas <a href="#references">*[Carleo&Troyer (2017)]*</a>:
 1. We will expand a quantum state in a certain basis where coefficients will be parametrized by a neural network. 
 2. We will treat an expectation value of a Hamiltonian as a loss function and evaluate it through sampling. 
 3. We will optimize the loss function by the steepest descent on neural network parameters. 
+
 Note, all this is purely optimization: there is no data and we utilize neural networks only as (powerful!) function approximators[^2]. For simplicity, we will focus on spin Hamiltonian models, but the formalism below extends to fermions and bosons as well. 
 
 ### Representating a quantum state
