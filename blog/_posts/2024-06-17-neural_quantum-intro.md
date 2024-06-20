@@ -215,7 +215,7 @@ We will revisit the quantum geometric tensor $$\mathbf{S}$$ in more detail when 
 
 ## Neural networks for quantum - hopes
 
-Wonderful! So far we have studied three key ideas for applying neural networks to quantum many-body problems. To recap: 
+Wonderful! So far we have studied three key ideas for applying neural networks to quantum many-body problems (often known as **neural quantum states**). To recap: 
 
 1. Represent the coefficients of a quantum state using a neural network,
 2. Sample the expectation value of energy to get the loss function[^8],
