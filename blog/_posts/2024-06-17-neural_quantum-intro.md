@@ -81,7 +81,7 @@ This impressive progress across diverse disciplines naturally leads me to wonder
 
 In my view, the answer is **a qualified yes!** Why? Well, maybe because neural networks are *already* state-of-the-art for some quantum many-body physics models among all existing numerical methods! Neural networks for many-body problems are highly-expressible, runtime and memory-efficient and have a different set of limitations than existing numerical methods. Cool! This suggests a potentially interesting space of problems where neural networks might outperform traditional methods, which should eventually boost their popularity in the condensed matter and quantum information communities. Motivated by this why not learn more about neural networks for quantum?
 
-In this blogpost I will discuss how to apply **neural-network based methods for solving quantum many-body problems**. We will start by briefly describing the <a href="#neural-networks-for-quantum---basics">basic framework</a>. This should give enough background to understand the current literature on the topic. Equipped with this knowledge, we will talk about the <a href="#neural-networks-for-quantum---hopes">hopes</a> and rather unique strengths of neural networks for some quantum problems as compared with other existing methods. These will include the lack of an inherent sign problem (as compared with quantum Monte Carlo) and not being limited to area law entanglement states (as compared with tensor networks). Finally, we will discuss some associated <a href="#neural-quantum-states-challenges">challenges</a> and glimpse an <a href="#outlook"> outlook </a> and perspectives of this emerging field. 
+In this blogpost I will discuss how to apply **neural-network based methods for solving quantum many-body problems**. We will start by briefly describing the <a href="#neural-networks-for-quantum---basics">basic framework</a>. This should give enough background to understand the current literature on the topic. Equipped with this knowledge, we will talk about the <a href="#neural-networks-for-quantum---hopes">hopes</a> and rather unique strengths of neural networks for some quantum problems as compared with other existing methods. These will include the lack of an inherent sign problem (as compared with quantum Monte Carlo) and not being limited to area law entanglement states (as compared with tensor networks). Finally, we will discuss some associated <a href="#neural-quantum-states-challenges">challenges</a> and provide an <a href="#outlook"> outlook </a> of this emerging field. 
 
 Within the blogpost, I will assume you have some quantum background. I recognize though that this is an interdisciplinary field, so to make things a bit clearer for machine-learning-inclined people, please read through the extra expandable "ML boxes" to get a bit more of the quantum context. Alright, let's get started!
 * table of contents
@@ -90,11 +90,16 @@ Within the blogpost, I will assume you have some quantum background. I recognize
 
 ## Neural networks for quantum - basics
 
-Let's consider the problem of finding the lowest energy states or time dynamics of a quantum many-body problem. The basics of applying neural networks to it are really simple. We will consider three key ideas <a href="#references">*[Carleo&Troyer (2017)]*</a>. First, we will expand a quantum state in a certain basis where coefficients will be parametrized by a neural network. Second, we will treat an expectation value of a Hamiltonian as a loss function and evaluate it through sampling. Third, we will optimize the loss function by the steepest descent on neural network parameters. Note, all this is purely optimization: there is no data and we utilize neural networks only as (powerful!) function approximators[^2]. For simplicity, we will focus on spin Hamiltonian models, but the formalism below extends to fermions and bosons as well. 
+We will study the problem of finding the lowest energy states or time dynamics of a quantum many-body system. The basics of applying neural networks to it are really simple. We will consider three key ideas <a href="#references">*[Carleo&Troyer (2017)]*</a>. 
+1. We will expand a quantum state in a certain basis where coefficients will be parametrized by a neural network. 
+2. We will treat an expectation value of a Hamiltonian as a loss function and evaluate it through sampling. 
+3. We will optimize the loss function by the steepest descent on neural network parameters. 
+Note, all this is purely optimization: there is no data and we utilize neural networks only as (powerful!) function approximators[^2]. For simplicity, we will focus on spin Hamiltonian models, but the formalism below extends to fermions and bosons as well. 
+
 ### Representating a quantum state
 
 <details>
-<summary><b>ML BOX 1:</b> Bra-ket notation and inner products. </summary>
+<summary><b>ML BOX 1:</b> Notation, quantum states and inner products. </summary>
 <div markdown="1">
 <span style="font-size:0.85em;"> In quantum mechanics, the state of a system, such as a collection of "qubits" (spins $$1/2$$) is represented as a vector $$|\psi \rangle$$ in a tensor product Hilbert space. For a system with $$N$$ qubits, this Hilbert space has a dimension $$2^N$$. Any vector in this space might be decomposed in a complete basis of length $$N$$ combinations of 0’s and 1’s.  For instance $$|000\rangle = |0\rangle \otimes |0\rangle \otimes |0\rangle$$ for $$N=3$$ corresponds to a basis vector $$e_0=(1,0,0,0,0,0,0,0)$$. To denote vectors in a Hilbert space $$\mathcal{H}$$ physicists often use bra-ket notation where "ket" is denoted by $$|\psi \rangle \in \mathcal{H}$$ and dual vector "bra" by $$\langle \phi | \in \mathcal{H}^{*}$$. In such notation, an inner product becomes $$\langle \phi | \psi \rangle \in \mathcal{C}$$. A quantum mechanical expectation value of an operator $$Q$$ in state $$|\psi \rangle$$ then can be written as $$\langle \psi | Q \psi \rangle$$. Throughout we assume working with an orthonormal basis $$\langle i|j\rangle = \delta_{ij}$$ thus e.g., $$\langle 000 | 001 \rangle = \langle 0 | 0 \rangle \langle 0 | 0 \rangle \langle 0 | 1 \rangle = 0$$. If you feel uncomfortable with using bra-ket notation just think of $$|\psi \rangle$$ as a $$2^N$$ dimensional complex vector $$\psi$$ (decomposable into an orthonormal complete basis as $$\psi = \sum_i \psi_i e_i$$ where $$e_i^{\dagger} e_j = \delta_{ij}$$), inner product $$\langle \phi | \psi \rangle$$ as $$\phi^{\dagger} \psi$$ where $${\dagger}$$ denotes conjugate transpose, and $$\langle \psi | Q \psi \rangle$$ as a quadratic form $$\psi^{\dagger} Q \psi$$. </span>
 </div>
@@ -105,7 +110,7 @@ Let’s begin by writing a many-body quantum state on $$N$$ qubits and expand it
 \begin{equation}
 |\psi \rangle = \sum_{s} \psi_s |s \rangle
 \end{equation} 
-where $$\{|s\rangle\}$$ are basis vectors (e.g., in a computational basis $$|s\rangle=|100\rangle$$ for $$N=3$$) and there will be $$2^N$$ bit string elements. The key point now is to parameterize complex coefficients $$\psi_s$$ as a neural network $$\psi_s (\theta)$$ where $$\theta$$ is a vector of all neural network parameters. Such a neural network takes as an input a bit string (e.g., $$s=\{-111\}$$ corresponding to the example above) and outputs a complex number $$\psi_s$$ - see the figure below. 
+where $$\{|s\rangle\}$$ are basis vectors (e.g., in a computational basis $$|s\rangle=|100\rangle$$ for $$N=3$$) and there will be $$2^N$$ bit string elements. The key point now is to parameterize complex coefficients $$\psi_s$$ as a neural network $$\psi_s (\theta)$$ where $$\theta$$ is a vector of all neural network parameters. Such a neural network takes as an input a bit string (e.g., $$s=\{-1,1,1\}$$ corresponding to the example above) and outputs a complex number $$\psi_s$$ - see the figure below. 
 
 <p style="text-align:center;"><img src="/assets/img/blog/blogpost_NQS_neural-net.png" width="600" loading="lazy"/></p>
 Fig. 1: A simple example of a neural network for a quantum many-body problem. $$W \in \mathbb{C}^{N_{hidden}\times N}$$, $$V^T \in \mathbb{C}^{1 \times N_{hidden}}$$ are trainable matrices, $$b \in \mathbb{C}^{N_{hidden}}$$ is a trainable (bias) vector and $$\sigma(x)$$ denotes a non-linearity e.g., [RELU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)). 
@@ -156,7 +161,7 @@ where $$p_s = \frac{|\psi_s|^2}{\sum_{s'} |\psi_{s'}|^2}$$ is a probability mass
 **Exercise:** Convince yourself that the above derivation is correct by filling-in the missing steps by yourself!
 {:.message}
 
-Now, here comes the key practical question: can we compute $$E_{loc}(s)$$ and $$\langle H \rangle$$ efficiently? What we have done above is mostly rewriting of the original exponentially-hard problem and, indeed, both quantities in principle involve sum over *all* bit string elements - and there are still $$2^N$$ of them...
+Now, here comes the key practical question: can we compute $$E_{loc}(s)$$ and $$\langle H \rangle$$ efficiently? Note that what we have done above is mostly rewriting of the original exponentially-hard problem and, indeed, both quantities in principle involve sum over *all* bit string elements - and there are still $$2^N$$ of them...
 
 Let's consider $$E_{loc}(s)$$ first. Although, for a fully generic Hamiltonian matrix will be dense, Hamiltonians corresponding to typical physical systems will be quite sparse! In particular, for a given bit string $$s$$ (row of an exponentially large Hamiltonian matrix), there will be only polynomially many (in $$N$$) non-zero entries. This implies that summation over $$s'$$ in $$E_{loc}(s)$$ might be performed efficiently.
 
@@ -165,11 +170,11 @@ Let's consider $$E_{loc}(s)$$ first. Although, for a fully generic Hamiltonian m
 
 That is great, but how about $$\langle H \rangle$$ evaluation? Well, utilizing the form of $$\langle H \rangle$$ we derived above, our best strategy is to evaluate a sum over exponentially many elements through sampling:
 \begin{equation}
-\langle H \rangle \approx \sum_{i=1}^{N_{samples}} E_{loc}(s_i) 
+\langle H \rangle \approx \frac{1}{N_{samples}} \sum_{i=1}^{N_{samples}} E_{loc}(s_i) 
 \end{equation}
 where set of samples $$\{s_i\}$$ are typically generated by a Metropolis-Hastings algorithm[^4] and $$\{s_i\}$$ make a Monte Carlo Markov Chain (MCMC).
 
-At first, it might sound a bit wild! In MCMC we create a chain of bit string configurations used for sampling $$s_0 \rightarrow s_1 \rightarrow \cdots \rightarrow s_{N_{samples}}$$. If the update rule is ergodic[^5] then the MCMC chain will eventually converge to sampling from an underlying true probability distribution. However, the required chain length (or mixing time) can be uncertain and sometimes exponentially long for some adversarial examples of distributions. So why doesn't it kill the method above? 
+At first, it might sound a bit wild! In MCMC we create a chain of bit string configurations used for sampling $$s_0 \rightarrow s_1 \rightarrow \cdots \rightarrow s_{N_{samples}}$$. If the update rule is ergodic[^5] then the MCMC chain will eventually converge to sampling from an underlying true probability distribution. However, the required chain length (or mixing time) can be uncertain and sometimes exponentially long for some adversarial examples of distributions. So why doesn't it ruin the method above? Here are a few practical reasons for this:
 
 1. For ground states of *stoquastic* Hamiltonians, the MCMC chain is *provably* polynomial in system size <a href="#references">*[Bravyi+ (2023)]*</a>[^6]. 
 2. One can just 'hope for the best' and monitor some quality characteristics of MCMC methods (such as [autocorrelation time](http://www.hep.fsu.edu/~berg/teach/mcmc08/material/lecture07mcmc3.pdf)and [Rsplit](https://projecteuclid.org/journals/bayesian-analysis/volume-16/issue-2/Rank-Normalization-Folding-and-Localization--An-Improved-R%cb%86-for/10.1214/20-BA1221.full)) which can often detect sampling issues. 
@@ -188,7 +193,7 @@ In the simplest form, it will correspond to a gradient descent algorithm for neu
 \end{equation} 
 where $$\eta$$ denotes learning rate. Note that the above gradient descent might be thought of as stochastic gradient descent (SGD) since we evaluate gradients $$\nabla_{\theta} \langle H \rangle$$ by sampling (as discussed before). 
 
-So why do I say the steepest descent instead of just SGD? Well, in practice, standard SGD often falls short for the majority of architectures and models. More advanced optimization methods such as quantum natural gradient <a href="#references">*[Stokes+ (2020)]*</a> (in the quantum Monte Carlo community also known as stochastic reconfiguration <a href="#references">*[Sorella (1998)]*</a>) are usually required. The main idea of these methods is to take into account "curvature" information of the underlying parameter space manifold and therefore perform an update in a "steeper" direction than that proposed by a gradient itself. Typically such extra information is hidden in a (stochastic approximation of) matrix $$\mathbf{S}_{\alpha, \beta} = \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right) \right] - \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \right] \mathbb{E} \left[ \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right]$$ with dimensions $$N_{parameters} \times N_{parameters}$$ (often known as quantum geometric tensor) which is said to precondition the usual gradient i.e. a quantum natural graident update is defined by
+So why do I say the steepest descent instead of just SGD? Well, in practice, standard SGD often falls short in accuracy for most architectures and models. More advanced optimization methods such as **quantum natural gradient** <a href="#references">*[Stokes+ (2020)]*</a> (in the quantum Monte Carlo community also known as stochastic reconfiguration <a href="#references">*[Sorella (1998)]*</a>) are usually required. The main idea of these methods is to take into account "curvature" information of the underlying parameter space manifold and therefore perform an update in a "steeper" direction than that proposed by a gradient itself. Typically such extra information is hidden in a (stochastic approximation of) matrix $$\mathbf{S}_{\alpha, \beta} = \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right) \right] - \mathbb{E} \left[ \left( \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\alpha}} \right)^{*} \right] \mathbb{E} \left[ \frac{\partial \log \psi_{s}(\theta)}{\partial \theta_{\beta}} \right]$$ with dimensions $$N_{parameters} \times N_{parameters}$$ (often known as **quantum geometric tensor**) which is said to precondition the usual gradient i.e. a quantum natural gradient update is defined by
 \begin{equation}
 \theta_{t+1} = \theta_{t} - \eta \mathbf{S}^{-1} \nabla_{\theta} \langle H \rangle 
 \end{equation}
@@ -199,7 +204,7 @@ Although I will postpone discussing $$\mathbf{S}$$ matrix (which is quite an int
 2. Quantum natural gradient updates are more costly[^7] than standard SGD. They require calculating matrix (pseudo)inverse, increasing computation complexity to $$\mathcal{O}(N_{parameters}^3 + N_{parameters}^2 N_{samples})$$ or after information re-packaging $$\mathcal{O}(N_{samples}^3 + N_{parameters} N_{samples}^2)$$, see <a href="#references">*[Chen&Heyl (2023)]*</a>,
 3. Matrix $$\mathbf{S}$$ is ill-conditioned and therefore needs regularization before it can be inverted. This is usually done by adding a small diagonal shift,  $$\mathbf{S} \rightarrow \mathbf{S} + \epsilon \mathbb{I}$$, to improve the condition number. 
 
-We will revisit the quantum geometric tensor in more detail when we get to <a href="#neural-quantum-states-challenges">challenges</a> section!
+We will revisit the quantum geometric tensor $$\mathbf{S}$$ in more detail when we get to <a href="#neural-quantum-states-challenges">challenges</a> section!
 
 <blockquote class="note">
   <b>Key idea 3:</b> Optimize the expectation value of energy through (stochastic) steepest descent. 
@@ -207,7 +212,7 @@ We will revisit the quantum geometric tensor in more detail when we get to <a hr
 
 ## Neural networks for quantum - hopes
 
-Great! So far we have studied three key ideas for applying neural networks to quantum many-body problems. To recap: 
+Wonderful! So far we have studied three key ideas for applying neural networks to quantum many-body problems. To recap: 
 
 1. Represent the coefficients of a quantum state using a neural network,
 2. Sample the expectation value of energy to get the loss function[^8],
@@ -281,7 +286,7 @@ This is cool: neural quantum states are strictly more expressive than tensor net
 
 ### Efficiency and ML community
 
-The expressivity of neural quantum states is cool, but it’s not enough. We need to not only know that a solution exists but also be able to find it efficiently! And here comes another good thing about neural networks: thanks to extensive machine learning research and commercial incentives, neural quantum states (if deployed right!) benefit from a lot of efficiency of running ML models[^13]. What does it mean in practice? It allows to access finite-size numerics on large system sizes, also in 2D, 3D and beyond![^14] This is again unlike tensor networks, which although can tackle 2D or even 3D systems, might potentially suffer from (i) contraction issues  and (ii) memory and runtime issues[^15]. These capabilities were demonstrated by finding state-of-the-art ground states of e.g., 40x40 square lattice Rydberg Hamiltonian  <a href="#references">*[Sprague&Czischek (2024)]*</a>  or a transverse field Ising model on a 21x21 square lattice <a href="#references">*[Sharir+ (2019)]*</a>.
+The expressivity of neural quantum states is nice, but it is not enough. We need to not only know that a solution exists but also be able to find it efficiently! And here comes another good thing about neural networks: thanks to extensive machine learning research and commercial incentives, neural quantum states (if deployed right!) benefit from a lot of efficiency of running ML models[^13]. What does it mean in practice? It allows to access finite-size numerics on large system sizes, also in 2D, 3D and beyond![^14] This is again unlike tensor networks, which although can tackle 2D or even 3D systems, might potentially suffer from (i) contraction issues  and (ii) memory and runtime issues[^15]. These capabilities were demonstrated by finding state-of-the-art ground states of e.g., 40x40 square lattice Rydberg Hamiltonian  <a href="#references">*[Sprague&Czischek (2024)]*</a>  or a transverse field Ising model on a 21x21 square lattice <a href="#references">*[Sharir+ (2019)]*</a>.
 
 <!-- Finally, a bit more vaguely: closness of the ML community makes a lot of research to be relevant to various tricks and  -->
 
