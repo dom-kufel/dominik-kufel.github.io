@@ -91,7 +91,7 @@ Beyond molecular problems, quantum physics presents a particularly natural domai
 
 In the series of two blogposts, I will try to convince you that this is indeed the case. Initially, I planned to cover everything in a single post but quickly realized there’s just too much to unpack! 
 
-In this more ML-focused post, I’ll introduce symmetries in neural networks from a conceptual angle that I find to be the cleanest and most intuitive. Don’t worry — you don’t need prior knowledge of group theory or physics, just a basic understanding of linear algebra and machine learning. We’ll start gently <a href="#symmetriesneural-networks-from-cnns-to-symmetry-groups-and-back">in the next section</a> by reviewing fundamental concepts like symmetries, groups, and representations, and then delve into the distinction between “invariance” and “equivariance” in transformations. <a href="#how-to-explicitly-construct-symmetric-neural-nets">Next</a>, I’ll guide you through two leading methods for embedding symmetries into neural networks: data augmentation and equivariant neural networks. <a href="#limitations-of-symmetric-neural-nets-and-possible-remedies">Finally</a>,, we’ll explore the limitations of these approaches, setting the stage for their application in the context of quantum many-body physics. 
+In this more ML-focused post, I’ll introduce symmetries in neural networks from a conceptual angle that I find to be the cleanest and most intuitive. Don’t worry — you don’t need prior knowledge of group theory or physics, just a basic understanding of linear algebra and machine learning. We’ll start gently <a href="#symmetriesneural-networks-from-cnns-to-symmetry-groups-and-back">in the next section</a> by reviewing fundamental concepts like symmetries, groups, and representations, and then delve into the distinction between “invariance” and “equivariance” in transformations. <a href="#how-to-explicitly-construct-symmetric-neural-nets">Next</a>, I’ll guide you through two leading methods for embedding symmetries into neural networks: data augmentation and equivariant neural networks. <a href="#limitations-of-symmetric-neural-nets-and-possible-remedies">Finally</a>, we’ll explore the limitations of these approaches, setting the stage for their application in the context of quantum many-body physics. 
 
 In the second blog post, we’ll build on this foundation, shift toward a more physics-centric perspective, and uncover surprising connections between symmetry approaches in physics and their rediscovery within the ML community. Exciting insights lie ahead, so let’s dive into the world of symmetries together!
 
@@ -138,13 +138,9 @@ Notation comment: sometimes it is convenient to write down the group in the form
 
 ### Groups and representations
 
-Before we get back to the neural nets, let's introduce another key concept: an idea of representation of a group. 
+Before we get back to the neural nets, let's introduce another key concept: an idea of representation of a group. Mathematically, it is a (not neccesarily one-to-one) map $$\rho : G \rightarrow GL(N,\mathbb{R})$$ from group elements to a (real) $$N \times N$$ matrices, known as a general linear group $$GL(N,\mathbb{R})$$. 
 
-Mathematically, it is a (not neccesarily one-to-one) map $$\rho : G \rightarrow GL(N,\mathbb{R})$$ from group elements to a (real) $$N \times N$$ matrices, known as a general linear group $$GL(N,\mathbb{R})$$. 
-
-This map assigns each element $$g \in G$$ to a corresponding matrix $$\rho(g) \in GL(N, \mathbb{R})$$, and it must satisfy the following property: $$\rho(g_1 g_2) = \rho(g_1) \rho(g_2) \quad \forall g_1, g_2 \in G$$
-
-This property is called a **homomorphism**, and it ensures that the group multiplication rule (closure) is preserved when working with the corresponding matrices i.e. combining two group elements in G corresponds to multiplying their respective matrices in the representation. 
+This map assigns each element $$g \in G$$ to a corresponding matrix $$\rho(g) \in GL(N, \mathbb{R})$$, and it must satisfy the following property: $$\rho(g_1 g_2) = \rho(g_1) \rho(g_2) \quad \forall g_1, g_2 \in G$$. This property is called a **homomorphism**, and it ensures that the group multiplication rule (closure) is preserved when working with the corresponding matrices i.e. combining two group elements in G corresponds to multiplying their respective matrices in the representation. 
 
 Intuitively, the reason we introduce representations is to make the abstract concept of groups more tangible by working with matrices. Matrices act on geometric spaces, allowing us to visualize and analyze group elements as linear transformations. This approach leverages the familiar and versatile toolkit of linear algebra, making it easier to explore and understand symmetries in a more concrete, hands-on way!
 
@@ -252,9 +248,9 @@ This strategy has been surprisingly succesful and was recently applied e.g., wit
 ### Weight sharing
 
 Another approach, known as weight sharing, achieves equivariance by restricting the neural network architecture rather than augmenting the dataset. A particularly versatile method within this framework is the equivariant multi-layer perceptron (equivariant MLP), introduced by [[Finzi+ 2021]](#references). This method is quite general, working for both discrete and continuous (Lie) groups, and encompasses other popular group-equivariant frameworks, such as:
-- G-convolutional [[Cohen&Welling 2016]](#references), 
-- G-steerable [[Cohen&Welling 2016b]](#references), or
-- deep set [[Zaheer+ 2017]](#references) 
+- G-convolutional networks [[Cohen&Welling 2016]](#references), 
+- G-steerable networks [[Cohen&Welling 2016b]](#references), or
+- deep sets [[Zaheer+ 2017]](#references) 
 
 These architectures are **generalizations** of convolutional neural networks (CNNs) to symmetries beyond translations, making them powerful generalizations for a wide range of group structures.
 
@@ -310,6 +306,7 @@ I have motivated the use of symmetries partly based on the success of convolutio
 $$
 y_i = \sum_{j \in \mathbb{Z}_N} w_{i} x_{i-j}  
 $$
+
 where $$w = \begin{pmatrix} w_1 & w_2 & w_3 & \dots & w_N \\ \end{pmatrix}^T$$ is a kernel vector (of size $$N$$ as described above). 
 
 After renaming the summation variable we get:
