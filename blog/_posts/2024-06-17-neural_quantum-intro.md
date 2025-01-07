@@ -2,7 +2,7 @@
 layout: post
 title: Neural networks for quantum many-body physics
 description: >
-  A quick intro to the neural networks for quantum many-body physics. Basic quantum background encouraged but not necessary.
+  A quick intro to neural quantum states. Basic quantum background encouraged but not necessary.
 sitemap: false
 ---
 
