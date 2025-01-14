@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Symmetries, neural nets and applications to quantum - a quick introduction
+title: Symmetries, neural nets and applications - a quick introduction
 description: >
   Introduction to symmetries, equivariant neural nets and their limitations. 
 sitemap: false
@@ -351,7 +351,7 @@ For non-regular representations, we need to design non-linearities that explicit
 **Exercise:** In case it is not obvious, show that unitary matrices do not change the norm. 
 {:.message}
 
-Finally, I should mention that for some (not neccesarily regular) representations, point-wise non-linearities can still preserve symmetry in form of equivariance or invariance. A first step in theoretical understanding of this is provided by [[Pacini+ 2024]](#references). One of the interesting conclusions is that with $$SO(n)$$ (group of rotations in $$n$$-dimensional space) can be made at most **invariant** for most general point-wise non-linearities (but not equivariant)[^10]. 
+Finally, I should mention that for some (not neccesarily regular) representations, point-wise non-linearities can still preserve symmetry in form of equivariance or invariance. A first step in theoretical understanding of this is provided by [[Pacini+ 2024]](#references). One of the interesting conclusions is that with $$SO(n)$$ (group of rotations in $$n$$-dimensional space) can be made at most *invariant* for most general point-wise non-linearities (but not *equivariant*)[^10]. 
 
 #### Wrapping up: Limitations of equivariant MLPs
 Equivariant MLPs provide a powerful framework for enforcing equivariance in neural networks, but they come with a few practical limitations. In practice, this approach is only limited by a relatively high $$\mathcal{O}((M+D)m^3)$$ complexity of numerically solving for allowable weight matrix $$W$$ where $$m$$ is a size of an input (e.g., number of pixels in the image), $$M$$ ($$D$$) is a number of *generators* of discrete (continuous) symmetries. In cases of very large images (and for symmetry groups which can be decomposed into product of translations and something else) G-steerable convolutions [[Cohen&Welling 2016b]](#references) are probably a better approach. What remains curious is also an extra degree of freedom in constructing equivariant MLPs: while the representations of the input and output layers are typically determined by the problem (e.g., input data structure or output symmetry requirements), there is flexibility in choosing the representations for hidden layers. This extra degree of freedom raises questions such as are there any better or worse choices for hidden layer representations? For instance, does a degree of faithfulness of the representation matter? These questions remain open for further research and may lead to refinements in how equivariant MLPs are constructed.
